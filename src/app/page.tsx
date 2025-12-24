@@ -5,16 +5,18 @@ import { Todo } from "@/types/todo";
 import { Plus, Trash2, CheckCircle, Circle, ClipboardList } from "lucide-react"; 
 
 export default function Home() {
-  const [todos, setTodos] = useState<Todo[]>([]);
+  // ✅ Load from localStorage safely
+  const [todos, setTodos] = useState<Todo[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("todos");
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+
   const [text, setText] = useState("");
 
-  // Load from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem("todos");
-    if (saved) setTodos(JSON.parse(saved));
-  }, []);
-
-  // Save to localStorage
+  // ✅ Save to localStorage
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todos));
   }, [todos]);
@@ -32,63 +34,64 @@ export default function Home() {
 
   const toggleTodo = (id: string) => {
     setTodos(
-      todos.map((todo) =>
+      todos.map(todo =>
         todo.id === id ? { ...todo, completed: !todo.completed } : todo
       )
     );
   };
 
   const deleteTodo = (id: string) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
+    setTodos(todos.filter(todo => todo.id !== id));
   };
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl overflow-hidden">
+    <main className="min-h-screen bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-slate-950 via-slate-900 to-indigo-950 flex items-center justify-center p-6">
+      {/* Main Card - Improved Contrast */}
+      <div className="w-full max-w-md bg-slate-900/90 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden">
         
-        {/* Header Section */}
-        <div className="p-8 pb-4">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="bg-indigo-500 p-2 rounded-lg">
+        {/* Header */}
+        <div className="p-8 pb-6">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-500/20">
               <ClipboardList className="text-white w-6 h-6" />
             </div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">
+            <h1 className="text-3xl font-bold text-white tracking-tight">
               My Tasks
             </h1>
           </div>
-          <p className="text-indigo-200 text-sm">Stay organized and productive.</p>
+          <p className="text-slate-400 text-sm font-medium">Stay organized and productive.</p>
         </div>
 
-        {/* Input Section */}
-        <div className="px-8 mb-6">
+        {/* Input Field - Better Visibility */}
+        <div className="px-8 mb-8">
           <div className="relative group">
             <input
               value={text}
               onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addTodo()}
               placeholder="What needs to be done?"
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
+              className="w-full bg-slate-800/50 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all shadow-inner"
             />
             <button
               onClick={addTodo}
-              className="absolute right-2 top-2 bottom-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 rounded-xl transition-all active:scale-95 flex items-center gap-1 shadow-lg"
+              className="absolute right-2 top-2 bottom-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 rounded-xl transition-all active:scale-95 flex items-center gap-1 shadow-lg shadow-indigo-500/30"
             >
-              <Plus size={20} />
-              <span className="font-medium">Add</span>
+              <Plus size={20} strokeWidth={3} />
+              <span className="font-semibold">Add</span>
             </button>
           </div>
         </div>
 
-        {/* Todo List Section */}
-        <div className="px-4 pb-8 max-h-[400px] overflow-y-auto custom-scrollbar">
-          <ul className="space-y-3 px-4">
+        {/* Todo List Area */}
+        <div className="px-6 pb-8 max-h-[450px] overflow-y-auto custom-scrollbar">
+          <ul className="space-y-3">
             {todos.map((todo) => (
               <li
                 key={todo.id}
-                className={`group flex items-center justify-between p-4 rounded-2xl transition-all duration-300 ${
+                className={`group flex items-center justify-between p-4 rounded-2xl transition-all duration-300 border ${
                   todo.completed 
-                    ? "bg-white/5 opacity-60" 
-                    : "bg-white/10 hover:bg-white/15 border border-white/5 shadow-sm"
+                    ? "bg-slate-800/20 border-transparent opacity-50" 
+                    : "bg-slate-800/40 border-white/5 hover:border-indigo-500/30 shadow-md"
                 }`}
               >
                 <div 
@@ -96,13 +99,17 @@ export default function Home() {
                   onClick={() => toggleTodo(todo.id)}
                 >
                   {todo.completed ? (
-                    <CheckCircle className="text-emerald-400 w-6 h-6 shrink-0" />
+                    <div className="bg-emerald-500/20 p-1 rounded-full">
+                      <CheckCircle className="text-emerald-400 w-6 h-6 shrink-0" />
+                    </div>
                   ) : (
-                    <Circle className="text-slate-400 group-hover:text-indigo-400 w-6 h-6 shrink-0" />
+                    <Circle className="text-slate-500 group-hover:text-indigo-400 w-6 h-6 shrink-0 transition-colors" />
                   )}
                   <span
-                    className={`text-base transition-all ${
-                      todo.completed ? "line-through text-slate-400" : "text-slate-100"
+                    className={`text-[15px] font-medium transition-all duration-300 ${
+                      todo.completed 
+                        ? "line-through text-slate-500" 
+                        : "text-indigo-50"
                     }`}
                   >
                     {todo.text}
@@ -111,7 +118,7 @@ export default function Home() {
 
                 <button
                   onClick={() => deleteTodo(todo.id)}
-                  className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                  className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all md:opacity-0 group-hover:opacity-100"
                 >
                   <Trash2 size={18} />
                 </button>
@@ -120,11 +127,11 @@ export default function Home() {
           </ul>
 
           {todos.length === 0 && (
-            <div className="py-12 text-center">
-              <div className="inline-block p-4 bg-white/5 rounded-full mb-4">
-                <ClipboardList className="text-slate-500 w-8 h-8" />
+            <div className="py-16 text-center">
+              <div className="inline-block p-5 bg-slate-800/50 rounded-full mb-4">
+                <ClipboardList className="text-slate-600 w-10 h-10" />
               </div>
-              <p className="text-slate-400 font-medium">No tasks yet. Add one above!</p>
+              <p className="text-slate-500 font-semibold tracking-wide">No tasks yet. Add one above!</p>
             </div>
           )}
         </div>
