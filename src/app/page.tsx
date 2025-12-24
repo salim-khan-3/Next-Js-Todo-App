@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Todo } from "@/types/todo";
-import { Plus, Trash2, CheckCircle, Circle, ClipboardList } from "lucide-react"; // আইকন ইমপোর্ট
+import { Plus, Trash2, CheckCircle, Circle, ClipboardList } from "lucide-react"; 
 
 export default function Home() {
   const [todos, setTodos] = useState<Todo[]>([]);
